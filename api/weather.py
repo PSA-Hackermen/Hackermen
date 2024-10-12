@@ -4,42 +4,49 @@ import urllib
 import json as j
 import dotenv
 import matplotlib.pyplot as plt
+from api import langchain_api
+
+llm_client = langchain_api.OpenAIClient()
 
 def findRoute(source_dock, dest_dock, sailing_speed, travel_duration):
     # sailing_speed is a tuple of (min_speed, max_speed)
     # travel_duration is an integer representing the max number of hours to travel
 
     merged_df = pd.DataFrame()
+    figure = None  # Initialize figure to handle cases where it's not defined
     for coordinates in MARITIME_POINTS.values():
-        lat, long = coordinates 
-        df, figure = callAPI(lat, long)
-        if merged_df.empty: merged_df = df
-        else: merged_df = pd.concat([merged_df, df], ignore_index=True)
+        lat, long = coordinates
+        df, figure = callAPI(lat, long)  # Assuming callAPI returns (DataFrame, Figure)
+        
+        # Only concatenate if df is not empty
+        if not df.empty:
+            if merged_df.empty:
+                merged_df = df
+            else:
+                merged_df = pd.concat([merged_df, df], ignore_index=True)
 
+    # Convert DataFrame to a list of dictionaries
     df_dict = merged_df.to_dict(orient='records')
-
     for data in df_dict:
         if 'dateTimeISO' in data:
             del data['dateTimeISO']
-
+    # Create the object for the API call
     obj = {
         "source_dock": source_dock,
         "dest_dock": dest_dock,
         "sailing_speed": sailing_speed,
         "travel_duration": travel_duration,
-        "api_data": df_dict
+        "api_data": j.dumps(df_dict)
     }
 
-    json_object = j.dumps(obj)
-    print(json_object)
+    route_list = llm_client.generate(j.dumps(obj))
+    print(route_list)
 
-    # call langchain with json_object
-
-    return merged_df, figure
+    return merged_df, figure, route_list
 
 def callAPI(mt_lat, mt_long):
     values = dotenv.dotenv_values(".env")
-    request = urllib.request.urlopen(f'https://data.api.xweather.com/maritime/{mt_lat},{mt_long}?filter=1hr&client_id={values["CLIENT_ID"]}&client_secret={values["CLIENT_SECRET"]}')
+    request = urllib.request.urlopen(f'https://data.api.xweather.com/maritime/{mt_lat},{mt_long}?filter=1hr&client_id={values["CLIENT_ID"]}&client_secret={values["CLIENT_SECRET"]}&plimit=1')
     response = request.read()
     json = j.loads(response)
     

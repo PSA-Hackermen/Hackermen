@@ -14,7 +14,7 @@ def _set_api_key():
 class OpenAIClient:
     def __init__(self, temperature: float = 0.3, model: str = "gpt-3.5-turbo") -> None:
         _set_api_key()
-        self.llm = ChatOpenAI(model=model, temperature=temperature, )
+        self.llm = ChatOpenAI(model=model, temperature=temperature )
 
     def generate(self, user_prompt: str,
              system_context: str = """You are an advanced maritime AI model that serves to compute the most sustainable route 
@@ -29,7 +29,7 @@ class OpenAIClient:
              4. The maximum travel duration allowed
              3. Nested json structure containing the coordinates of maritime landmarks and their respective weather conditions
 
-             You will output the route such that it maximises the generation of renewable energy from the ship.
+             Using the above sea coordinates and well known paths from source port to destination port, you will output the route such that it maximises the generation of renewable energy from the ship.
 
              Please embed using the json format {"route" : [a list of intermediary maritime coordinates from src to dest]}"""):
 

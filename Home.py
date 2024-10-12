@@ -45,7 +45,7 @@ st.markdown("Once you are ready, hit the **\"Find optimal route\"** button below
             f"from {source_dock} to {dest_dock}!")
 if st.button("Find optimal route", key="find_route") or st.session_state["find_route"]:
     with st.spinner("Generating..."):
-        st.session_state["df"], st.session_state["figure"] = findRoute(source_dock, dest_dock, sailing_speed)
+        st.session_state["df"], st.session_state["figure"], st.session_state["route"] = findRoute(source_dock, dest_dock, sailing_speed, travel_duration)
 
         st.subheader("Routes")
         node1 = Node(name="A", latitude=1.290270, longitude=103.851959)  # Singapore
