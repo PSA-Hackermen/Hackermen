@@ -1,8 +1,13 @@
 import streamlit as st
+import matplotlib.pyplot as plt
+
 from utils.state import define_session_states
 
 # create session state variables
 define_session_states()
+
+# turn off plotting behaviour for matplotlib
+plt.ioff()
 
 st.image("assets/image.png")
 st.header("Hackermen")
@@ -13,8 +18,31 @@ if st.session_state["df"] is None or st.session_state["figure"] is None:
     st.warning("**Make sure to generate your data first before proceeding with the analysis!**")
 else:
     st.subheader("Raw Data")
-    st.markdown("These are the raw data that are obtained from the API calls.")
-    st.dataframe(st.session_state["df"])
+    st.markdown("These are the raw data that are obtained from the API calls. You may edit the data as you wish by double-clicking "
+                "any cell in the table below!")
+    st.data_editor(st.session_state["df"])
+
+    st.subheader("Aggregate Statistics")
+    st.markdown("We can look at some aggregate statistics of the raw data for a better overview of the data.")
+    st.dataframe(st.session_state["df"].describe())
+
+    st.subheader("Data Explorer")
+    st.markdown("To visualise the individual columns, select one of the columns below to view the plot of the data within the column. If the data is "
+                "categorical in nature, summary statistics will be shown instead.")
+    
+    column_to_analyse = st.selectbox(label="Select field to analyse", options=st.session_state["df"].columns)
+    
+    try:
+        figure, axis = plt.subplots()
+        plt.title(column_to_analyse)
+        figure.tight_layout()
+        st.session_state["df"][column_to_analyse].plot(ax=axis)
+        st.pyplot(fig=figure)
+    except:
+        try:
+            st.dataframe(st.session_state["df"][column_to_analyse].describe())
+        except Exception as ex:
+            st.error("Pick another column to analyse as the selected column is not numerical in nature!")
 
     st.subheader("Plots")
     st.markdown("To better visualise the data, let's take a look at key variables used for our analysis. "

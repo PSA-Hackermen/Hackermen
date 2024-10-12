@@ -2,3 +2,4 @@ streamlit
 requests_cache
 openmeteo_requests
 retry_requests
+plotly
