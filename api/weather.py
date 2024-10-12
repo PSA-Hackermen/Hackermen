@@ -17,6 +17,11 @@ def findRoute(source_dock, dest_dock, sailing_speed, travel_duration):
         else: merged_df = pd.concat([merged_df, df], ignore_index=True)
 
     df_dict = merged_df.to_dict(orient='records')
+
+    for data in df_dict:
+        if 'dateTimeISO' in data:
+            del data['dateTimeISO']
+
     obj = {
         "source_dock": source_dock,
         "dest_dock": dest_dock,
@@ -26,6 +31,7 @@ def findRoute(source_dock, dest_dock, sailing_speed, travel_duration):
     }
 
     json_object = j.dumps(obj)
+    print(json_object)
 
     # call langchain with json_object
 

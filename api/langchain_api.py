@@ -17,10 +17,21 @@ class OpenAIClient:
         self.llm = ChatOpenAI(model=model, temperature=temperature, )
 
     def generate(self, user_prompt: str,
-             system_context: str = """You are an advanced AI model that serves to provide edge weights for a 
-             graph whose nodes represent ports. We will give you weather condition logs for the past three days
-             and your job is to give us appropriate weights for each provided location provided based on the difficulty of travel.
-             Please answer using the json format {"[a tuple latitude and longitude that is given to you in the HumanMessage]" : "[respective difficulty of sailing in the area on a scale of 0.0 to 10.0]}"""):
+             system_context: str = """You are an advanced maritime AI model that serves to compute the most sustainable route 
+             from source port to destination port within the specified travel duration in the input. You will assume that all 
+             ships have technologies to get renewable energy (e.g. kinetic energy from tidal waves, solar energy, etc).
+             
+             We will give you a json input that contains the following:
+
+             1. Source Port
+             2. Destination Port
+             3. Average sailing speed of the ship 
+             4. The maximum travel duration allowed
+             3. Nested json structure containing the coordinates of maritime landmarks and their respective weather conditions
+
+             You will output the route such that it maximises the generation of renewable energy from the ship.
+
+             Please embed using the json format {"route" : [a list of intermediary maritime coordinates from src to dest]}"""):
 
         system_message = AIMessage(content=system_context)
         human_message = HumanMessage(content=user_prompt)  # Directly use user_prompt here
