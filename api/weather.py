@@ -23,7 +23,8 @@ def findRoute(source_dock, dest_dock):
     # return "sdfsd"
 
 def callAPI():
-    request = urllib.request.urlopen(f'https://data.api.xweather.com/maritime/1.1899783653405318,103.82527073559538?filter=1hr&client_id={dotenv.get_key("CLIENT_ID")}&client_secret={dotenv.get_key("CLIENT_SECRET")}')
+    values = dotenv.dotenv_values(".env")
+    request = urllib.request.urlopen(f'https://data.api.xweather.com/maritime/1.1899783653405318,103.82527073559538?filter=1hr&client_id={values["CLIENT_ID"]}&client_secret={values["CLIENT_SECRET"]}')
     response = request.read()
     json = j.loads(response)
     
