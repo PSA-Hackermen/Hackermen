@@ -5,7 +5,9 @@ import json as j
 import dotenv
 import matplotlib.pyplot as plt
 
-def findRoute(source_dock, dest_dock):
+def findRoute(source_dock, dest_dock, sailing_speed, travel_duration):
+    # sailing_speed is a tuple of (min_speed, max_speed)
+    # travel_duration is an integer representing the max number of hours to travel
 
     merged_df = pd.DataFrame()
     for coordinates in MARITIME_POINTS.values():
