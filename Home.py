@@ -21,11 +21,8 @@ col1, col2 = st.columns(2)
 source_dock = col1.selectbox("Select your Starting Port", options=PORTS, key="source_port")
 dest_dock = col2.selectbox("Select your Destination Port", options=[ports for ports in PORTS if ports != source_dock], key="destination_port")
 
-selected_speed = st.selectbox("Select Sailing Speed Range", options=[desc for desc, _ in SAILING_SPEEDS])
-sailing_speed = next(value for desc, value in SAILING_SPEEDS if desc == selected_speed)
-
-travel_duration = st.selectbox("Select Travel Duration (hours)", options=TRAVEL_DURATIONS)
-
+sailing_speed = st.select_slider(label="Select Sailing Speed Range", key="sail-range", options=list(range(10, 28 + 1)), value=(10, 28))
+travel_duration = st.slider("Select Maximum Travel Duration (hours)", min_value=100, max_value=700, step=10, key="duration-selecter")
 
 with st.expander("See Port Locations and Points of Interest"):
     st.subheader("Port Location")
@@ -42,10 +39,12 @@ with st.expander("See Port Locations and Points of Interest"):
 
 st.subheader("Generate Route")
 st.markdown("Once you are ready, hit the **\"Find optimal route\"** button below to begin finding the optimal path "
-            f"from {source_dock} to {dest_dock}!")
-if st.button("Find optimal route", key="find_route") or st.session_state["find_route"]:
+            f"from {source_dock} to {dest_dock}, travelling at an average of {sailing_speed[0]} knots to {sailing_speed[1]} knots within {travel_duration} hours!")
+
+if st.button("Find Optimal Route", key="find_route") or st.session_state["find_route"]:
     with st.spinner("Generating..."):
-        st.session_state["df"], st.session_state["figure"], st.session_state["route"] = findRoute(source_dock, dest_dock, sailing_speed, travel_duration)
+        st.session_state["maritime-df"], st.session_state["weather-df"], st.session_state["maritime-figure"], st.session_state["weather-figure"] = \
+            findRoute(source_dock, dest_dock, sailing_speed, travel_duration)
 
         st.subheader("Routes")
         node1 = Node(name="A", latitude=1.290270, longitude=103.851959)  # Singapore
@@ -64,5 +63,3 @@ if st.button("Find optimal route", key="find_route") or st.session_state["find_r
         edge_data = [edge.get() for edge in edges]
 
         st_folium(Map(1.29, 103.8, edges).plot(), width=700, height=500, returned_objects=[])
-
-        st.info("Blue Lines represents normal paths, while Green Lines represents greener paths")
