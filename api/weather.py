@@ -4,26 +4,20 @@ import urllib
 import json as j
 import dotenv
 
-
-
-# Lists to hold latitudes and longitudes
-latitudes = []
-longitudes = []
-
-for coordinates in MARITIME_POINTS.values():
-    lat, long = coordinates 
-    latitudes.append(lat)
-    longitudes.append(long)
-
 def findRoute(source_dock, dest_dock):
 
-    return callAPI()
+    merged_df = pd.DataFrame()
+    for coordinates in MARITIME_POINTS.values():
+        lat, long = coordinates 
+        df = callAPI(lat, long)
+        if merged_df.empty: merged_df = df
+        else: merged_df = pd.concat([merged_df, df], ignore_index=True)
 
-    # return "sdfsd"
+    return merged_df
 
-def callAPI():
+def callAPI(mt_lat, mt_long):
     values = dotenv.dotenv_values(".env")
-    request = urllib.request.urlopen(f'https://data.api.xweather.com/maritime/1.1899783653405318,103.82527073559538?filter=1hr&client_id={values["CLIENT_ID"]}&client_secret={values["CLIENT_SECRET"]}')
+    request = urllib.request.urlopen(f'https://data.api.xweather.com/maritime/{mt_lat},{mt_long}?filter=1hr&client_id={values["CLIENT_ID"]}&client_secret={values["CLIENT_SECRET"]}')
     response = request.read()
     json = j.loads(response)
     
