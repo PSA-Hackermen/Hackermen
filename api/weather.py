@@ -3,17 +3,18 @@ import pandas as pd
 import urllib
 import json as j
 import dotenv
+import matplotlib.pyplot as plt
 
 def findRoute(source_dock, dest_dock):
 
     merged_df = pd.DataFrame()
     for coordinates in MARITIME_POINTS.values():
         lat, long = coordinates 
-        df = callAPI(lat, long)
+        df, figure = callAPI(lat, long)
         if merged_df.empty: merged_df = df
         else: merged_df = pd.concat([merged_df, df], ignore_index=True)
 
-    return merged_df
+    return merged_df, figure
 
 def callAPI(mt_lat, mt_long):
     values = dotenv.dotenv_values(".env")
@@ -57,8 +58,47 @@ def callAPI(mt_lat, mt_long):
         # Convert the list of extracted data to a pandas DataFrame
         df = pd.DataFrame(data_list)
 
+        df["dateTimeISO"] = pd.to_datetime(df["dateTimeISO"])
+
+        fig, axis = plt.subplots(figsize=(12, 12))
+        axis.set_xlabel('Time')
+        axis.set_ylabel('Sea Surface Temp (°C)', color='tab:red')
+        axis.plot(df['dateTimeISO'], df['seaSurfaceTemperatureC'], color='tab:red', label='Sea Surface Temp (°C)')
+        axis.tick_params(axis='y', labelcolor='tab:red')
+
+        # Create a secondary y-axis for sea current speed
+        ax2 = axis.twinx()
+        ax2.set_ylabel('Sea Current Speed (m/s)', color='tab:blue')
+        ax2.plot(df['dateTimeISO'], df['seaCurrentSpeedMPS'], color='tab:blue', label='Sea Current Speed (m/s)')
+        ax2.tick_params(axis='y', labelcolor='tab:blue')
+
+        # Create another y-axis for significant wave height
+        ax3 = axis.twinx()
+        ax3.spines['right'].set_position(('outward', 60))  # Move the third y-axis out to avoid overlap
+        ax3.set_ylabel('Significant Wave Height (m)', color='tab:green')
+        ax3.plot(df['dateTimeISO'], df['significantWaveHeightM'], color='tab:green', label='Wave Height (m)')
+        ax3.tick_params(axis='y', labelcolor='tab:green')
+
+        # Create a fourth y-axis for tides
+        ax4 = axis.twinx()
+        ax4.spines['right'].set_position(('outward', 120))  # Move the fourth y-axis further out
+        ax4.set_ylabel('Tides (m)', color='tab:orange')
+        ax4.plot(df['dateTimeISO'], df['tidesM'], color='tab:orange', label='Tides (m)')
+        ax4.tick_params(axis='y', labelcolor='tab:orange')
+
+        # Create a fifth y-axis for surge
+        ax5 = axis.twinx()
+        ax5.spines['right'].set_position(('outward', 180))  # Move the fifth y-axis further out
+        ax5.set_ylabel('Surge (m)', color='tab:purple')
+        ax5.plot(df['dateTimeISO'], df['surgeM'], color='tab:purple', label='Surge (m)')
+        ax5.tick_params(axis='y', labelcolor='tab:purple')
+
+        # Title and layout adjustments
+        plt.title(f"Environmental Data Plot at Location (Lat: {lat}, Long: {long})")
+        fig.tight_layout()
+
         # Print the DataFrame
-        return df
+        return df, fig
     else:
         print("An error occurred: %s" % (json['error']['description']))
         request.close()
