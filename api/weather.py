@@ -34,20 +34,20 @@ def callAPI(mt_lat, mt_long):
         # Iterate through all periods and extract relevant data
         for period in json['response'][0]['periods']:
             extracted_data = {
-                "dateTimeISO": period['dateTimeISO'],
-                "seaSurfaceTemperatureC": period['seaSurfaceTemperatureC'],
-                "seaCurrentSpeedMPS": period['seaCurrentSpeedMPS'],
-                "seaCurrentDir": period['seaCurrentDir'],
-                "seaCurrentDirDEG": period['seaCurrentDirDEG'],
-                "significantWaveHeightM": period['significantWaveHeightM'],
-                "primaryWaveDir": period['primaryWaveDir'],
-                "primaryWaveDirDEG": period['primaryWaveDirDEG'],
-                "primaryWavePeriod": period['primaryWavePeriod'],
-                "tidesM": period['tidesM'],
-                "surgeM": period['surgeM'],
-                "windWaveDir": period['windWaveDir'],
-                "windWaveDirDEG": period['windWaveDirDEG'],
-                "windWavePeriod": period['windWavePeriod'],
+                "dateTimeISO": period.get('dateTimeISO', None),
+                "seaSurfaceTemperatureC": period.get('seaSurfaceTemperatureC', None),
+                "seaCurrentSpeedMPS": period.get('seaCurrentSpeedMPS', None),
+                "seaCurrentDir": period.get('seaCurrentDir', None),
+                "seaCurrentDirDEG": period.get('seaCurrentDirDEG', None),
+                "significantWaveHeightM": period.get('significantWaveHeightM', None),
+                "primaryWaveDir": period.get('primaryWaveDir', None),
+                "primaryWaveDirDEG": period.get('primaryWaveDirDEG', None),
+                "primaryWavePeriod": period.get('primaryWavePeriod', None),
+                "tidesM": period.get('tidesM', None),
+                "surgeM": period.get('surgeM', None),
+                "windWaveDir": period.get('windWaveDir', None),
+                "windWaveDirDEG": period.get('windWaveDirDEG', None),
+                "windWavePeriod": period.get('windWavePeriod', None),
                 "latitude": lat,
                 "longitude": long,
             }
@@ -58,7 +58,11 @@ def callAPI(mt_lat, mt_long):
         # Convert the list of extracted data to a pandas DataFrame
         df = pd.DataFrame(data_list)
 
-        df["dateTimeISO"] = pd.to_datetime(df["dateTimeISO"])
+        # prevent timezone localisation
+        df["dateTimeISO"] = pd.to_datetime(df["dateTimeISO"]).dt.tz_localize(None)
+        df["seaCurrentDir"] = df["seaCurrentDir"].astype("category")
+        df["primaryWaveDir"] = df["primaryWaveDir"].astype("category")
+        df["windWaveDir"] = df["windWaveDir"].astype("category")
 
         fig, axis = plt.subplots(figsize=(12, 12))
         axis.set_xlabel('Time')
