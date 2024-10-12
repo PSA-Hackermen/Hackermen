@@ -16,6 +16,19 @@ def findRoute(source_dock, dest_dock, sailing_speed, travel_duration):
         if merged_df.empty: merged_df = df
         else: merged_df = pd.concat([merged_df, df], ignore_index=True)
 
+    df_dict = merged_df.to_dict(orient='records')
+    obj = {
+        "source_dock": source_dock,
+        "dest_dock": dest_dock,
+        "sailing_speed": sailing_speed,
+        "travel_duration": travel_duration,
+        "api_data": df_dict
+    }
+
+    json_object = j.dumps(obj)
+
+    # call langchain with json_object
+
     return merged_df, figure
 
 def callAPI(mt_lat, mt_long):
