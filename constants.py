@@ -42,3 +42,14 @@ MARITIME_POINTS = {
     "Vung Tau (Vietnam)": (10.3331, 107.0834),
     "Gulf of Mannar": (9.0, 78.0)
 }
+
+SAILING_SPEEDS = [
+    ("10-12 knots", (10, 12)),
+    ("12-15 knots", (12, 15)),
+    ("13-16 knots", (13, 16)),
+    ("16-20 knots", (16, 20)),
+    ("18-24 knots", (18, 24)),
+    ("24-28 knots", (24, 28))
+]
+
+TRAVEL_DURATIONS = [100, 200, 300, 400, 500, 600, 700]
