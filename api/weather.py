@@ -1,4 +1,4 @@
-from constants import PORTS
+from constants import MARITIME_POINTS
 import pandas as pd
 import urllib
 import json as j
@@ -10,14 +10,13 @@ import dotenv
 latitudes = []
 longitudes = []
 
-for coordinates in PORTS.values():
+for coordinates in MARITIME_POINTS.values():
     lat, long = coordinates 
     latitudes.append(lat)
     longitudes.append(long)
 
 def findRoute(source_dock, dest_dock):
-    # for coordinates in PORTS.values():
-    #     return df
+
     return callAPI()
 
     # return "sdfsd"
