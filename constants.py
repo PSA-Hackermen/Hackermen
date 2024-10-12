@@ -26,9 +26,9 @@ MARITIME_POINTS = {
     "Bering Strait": (65.0, -169.0),
     "Gulf of Aden": (12.0, 45.0),
     "Java Sea": (-6.0, 110.0),
-    "Bay of Bengal": (20.0, 90.0),
-    "Caspian Sea": (41.0, 50.0),
-    "Black Sea": (43.0, 30.0),
+    # "Bay of Bengal": (20.0, 90.0), error in API
+    # "Caspian Sea": (41.0, 50.0), error in API
+    # "Black Sea": (43.0, 30.0), error in API
     "Celtic Sea": (50.0, -5.0),
     "Dardanelles": (40.0, 26.0),
     "Gulf of Guinea": (5.0, 0.0),
