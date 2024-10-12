@@ -51,7 +51,7 @@ class Map:
 
 
 def get_port_poi_plot(ports: dict[str, tuple], points_of_interest: dict[str, tuple]):
-    if not ports or not points_of_interest:
+    if not ports and not points_of_interest:
         st.error("No ports or points of interest detected!")
         return
 
