@@ -43,7 +43,7 @@ st.markdown("Once you are ready, hit the **\"Find optimal route\"** button below
 
 if st.button("Find Optimal Route", key="find_route") or st.session_state["find_route"]:
     with st.spinner("Generating..."):
-        st.session_state["maritime-df"], st.session_state["maritime-figure"], st.session_state["weather-df"], st.session_state["weather-figure"] = \
+        st.session_state["maritime-df"], st.session_state["weather-df"], st.session_state["maritime-figure"], st.session_state["weather-figure"] = \
             findRoute(source_dock, dest_dock, sailing_speed, travel_duration)
 
         st.subheader("Routes")

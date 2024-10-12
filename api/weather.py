@@ -135,6 +135,8 @@ def get_weather_figure(merged):
 
     # Add a title
     fig.suptitle('Weather Variables by Latitude and Longitude')
+    
+    return fig
 
 
 def get_maritime_api(mt_lat, mt_long):
