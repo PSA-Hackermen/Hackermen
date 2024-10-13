@@ -21,32 +21,45 @@ else:
     st.subheader("Raw Data")
     st.markdown("These are the raw data that are obtained from the API calls. You may edit the data as you wish by double-clicking "
                 "any cell in the table below!")
+    
+    st.markdown("#### Maritime Data")
     st.data_editor(st.session_state["maritime-df"])
+
+    st.markdown("#### Weather Data")
     st.data_editor(st.session_state["weather-df"])
+
+    st.divider()
 
     st.subheader("Aggregate Statistics")
     st.markdown("We can look at some aggregate statistics of the raw data for a better overview of the data.")
 
     if st.checkbox("Specify Aggregate Field", key="specify-aggregate"):
+        st.markdown("#### Maritime Data")
         aggregate_column = st.selectbox(label="Select field to aggregate by", key="maritime-agg", options=st.session_state["maritime-df"].columns)
         try:
             st.dataframe(st.session_state["maritime-df"].groupby(aggregate_column).describe())
         except:
             st.error("Select another field to aggregate by!")
         
+        st.markdown("#### Weather Data")
         aggregate_column = st.selectbox(label="Select field to aggregate by", key="weather-agg", options=st.session_state["weather-df"].columns)
         try:
             st.dataframe(st.session_state["weather-df"].groupby(aggregate_column).describe())
         except:
             st.error("Select another field to aggregate by!")
     else:
+        st.markdown("#### Maritime Data")
         st.dataframe(st.session_state["maritime-df"].describe())
+
+        st.markdown("#### Weather Data")
         st.dataframe(st.session_state["weather-df"].describe())
 
+    st.divider()
     st.subheader("Data Explorer")
     st.markdown("To visualise the individual columns, select one of the columns below to view the plot of the data within the column. If the data is "
                 "categorical in nature, summary statistics will be shown instead.")
     
+    st.markdown("#### Maritime Data")
     maritime_column = st.selectbox(label="Select field to analyse", key="exp-maritime", options=st.session_state["maritime-df"].columns)
 
     try:
@@ -60,7 +73,8 @@ else:
             st.dataframe(st.session_state["maritime-df"][maritime_column].describe())
         except Exception as ex:
             st.error("Pick another column to analyse as the selected column is not numerical in nature!")
-            
+
+    st.markdown("#### Weather Data")
     weather_column = st.selectbox(label="Select field to analyse", key="exp-weather", options=st.session_state["weather-df"].columns)
 
     try:
@@ -75,11 +89,14 @@ else:
         except Exception as ex:
             st.error("Pick another column to analyse as the selected column is not numerical in nature!")
 
+    st.divider()
     st.subheader("Plots")
     st.markdown("To better visualise the data, let's take a look at key variables used for our analysis. "
                 "We used 5 main variables to analyse the current weather conditions of the route to let us "
                 "better plan out the **safest** and **sustainable** route ships can take between "
                 "PSA's ports.")
+    
+    st.markdown("#### Maritime Data")
     st.markdown("The following exerpt explains the reasons why we have decided to use the 5 variables for determining the best ship routes:\n"
                 "* **Sea Surface Temperature**: This is useful for helping us to determine cooler regions where extreme weather conditions are "
                 "not likely to occur (warmer seas > greater likelihood of extreme weather conditions [cyclones, hurricanes] > greater threat to ship safety)\n"
@@ -90,5 +107,7 @@ else:
                 "* **Surge**: Surges are the temporary rise on sea level, caused by weather conditions. This helps us to assess the overall safety of ships along "
                 "planned routes")
     st.pyplot(st.session_state["maritime-figure"])
+
+    st.markdown("#### Weather Data")
     st.pyplot(st.session_state["weather-figure"])
 

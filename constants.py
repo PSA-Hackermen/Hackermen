@@ -42,3 +42,5 @@ MARITIME_POINTS = {
     "Vung Tau (Vietnam)": (10.33, 107.08),
     "Gulf of Mannar": (9.00, 78.00)
 }
+
+REVERSE_COORDINATE_LOOKUP = {v: k for k, v in PORTS.items()} | {v: k for k, v in MARITIME_POINTS.items()}

@@ -5,7 +5,8 @@ from streamlit_folium import folium_static, st_folium
 from utils.map import Node, Edge, Map, get_port_poi_plot
 from utils.state import define_session_states
 from api.weather import findRoute
-from constants import PORTS, MARITIME_POINTS
+from api.location import reverse_lookup_location
+from constants import PORTS, MARITIME_POINTS, REVERSE_COORDINATE_LOOKUP
 
 # declare session states
 define_session_states()
@@ -13,7 +14,8 @@ define_session_states()
 st.image("assets/image.png")
 
 st.header("Hackermen")
-st.markdown("Use this page to generate the safest and most sustainable routes from one Port to another.")
+st.markdown("Use this page to generate the safest and most sustainable routes from one Port to another.\n\n"
+            "Click on the \"Analysis\" page on the sidebar to access the analysis of data that you have obtained here.")
 
 st.subheader("Select Ports")
 st.markdown("Select the starting and destination port to begin charting a route!")
@@ -38,6 +40,7 @@ with st.expander("See Port Locations and Points of Interest"):
 
     st_folium(get_port_poi_plot(PORTS, MARITIME_POINTS), key="port-loc", width=700)
 
+st.divider()
 st.subheader("Generate Route")
 st.markdown("Once you are ready, hit the **\"Find optimal route\"** button below to begin finding the optimal path "
             f"from {source_dock} to {dest_dock}, travelling at an average of {sailing_speed[0]} knots to {sailing_speed[1]} knots within {travel_duration} hours!")
@@ -50,26 +53,40 @@ if st.button("Find Optimal Route", key="find_route") or st.session_state["find_r
             findRoute(source_dock, dest_dock, sailing_speed, travel_duration)
             
         # Parse the JSON string
-        parsed_data = j.loads(st.session_state["route_list"])
+        try:
+            parsed_data = j.loads(st.session_state["route_list"])
+        except:
+            # if it fails, default to a direct connnection
+            parsed_data = {
+                "route": [
+                    source_dock,
+                    dest_dock
+                ]
+            }
+
         # Extract the route information
         route = parsed_data['route']
+
         # Save latitude and longitude as an array of tuples
         coordinates = [(index+1, point[0], point[1]) for index, point in enumerate(route)]
+
         # add source and destination to the coordinates
         coordinates.insert(len(coordinates),("DEST", dest_dock[0], dest_dock[1]))
         coordinates.insert(0, ("SOURCE", source_dock[0], dest_dock[1]))
-
-        # Output the array of tuples
-        print(coordinates)
 
         nodes = []
         edges = []
 
         for index, latitude, longitude in coordinates:
-            nodes.append(Node(name=f"Node {index}", latitude=latitude, longitude=longitude))
+            if (latitude, longitude) in REVERSE_COORDINATE_LOOKUP:
+                name = REVERSE_COORDINATE_LOOKUP.get((latitude, longitude))
+            else:
+                temp = reverse_lookup_location(latitude, longitude)
+                name = temp if temp else f"Node {index}"
+
+            nodes.append(Node(name=name, latitude=latitude, longitude=longitude))
 
         for i in range(len(nodes) - 1):
-            print(f"Appending edge from {nodes[i].name} to {nodes[i + 1].name}")
             edges.append(Edge(source=nodes[i], destination=nodes[i + 1], weight=2.0))
 
         # Get the edge data in list format (source, destination, weight)
@@ -79,12 +96,19 @@ if st.button("Find Optimal Route", key="find_route") or st.session_state["find_r
         st_folium(Map(1.29, 103.8, edges).plot(), width=700, height=500, returned_objects=[])
 
         # Create a list of formatted nodes
-        st.write("Path:")
+        st.markdown("#### Path")
 
-        for i in range(len(coordinates) - 1):
-            node_from = coordinates[i]
-            node_to = coordinates[i + 1]
-            st.write(f"Node {node_from[0]} ({node_from[1]}, {node_from[2]}) ➡️ Node {node_to[0]} ({node_to[1]}, {node_to[2]})")
-            
-        # Final node
-        st.write(f"Final Node: Node {coordinates[-1][0]} ({coordinates[-1][1]}, {coordinates[-1][2]})")
+        converted = []
+        for i in range(len(coordinates)):
+            node = coordinates[i]
+            name = reverse_lookup_location(latitude=node[1], longitude=node[2])
+
+            if i == len(coordinates) - 1:
+                name = f"Final Node: ({name})" if name else f"Final Node: ({node[1]}, {node[2]})"
+            else:
+                name = f"Node {i}: ({name})" if name else f"Node {i}: ({node[1]}, {node[2]})"
+
+            converted.append(name)
+
+        string = "\n\n ➡️ ".join(converted)
+        st.write(string)

@@ -15,15 +15,27 @@ def findRoute(source_dock, dest_dock, sailing_speed, travel_duration):
     # travel_duration is an integer representing the max number of hours to travel
     
     merged_maritime, merged_weather = pd.DataFrame(), pd.DataFrame()
+    loaded_maritime, loaded_weather = False, False
 
     for lat, long in MARITIME_POINTS.values():
+        if loaded_maritime and loaded_weather:
+            break
+
         if merged_maritime.empty:
-            merged_maritime = get_maritime_api(lat, long)
+            try:
+                merged_maritime = get_maritime_api(lat, long)
+            except:
+                loaded_maritime = True
+                merged_maritime = pd.read_csv("maritime.csv", index_col=0, header="infer").reset_index(drop=True)
         else:
             merged_maritime = pd.concat([merged_maritime, get_maritime_api(lat, long)], ignore_index=True)
         
         if merged_weather.empty:
-            merged_weather = get_weather_api(lat, long)
+            try:
+                merged_weather = get_weather_api(lat, long)
+            except:
+                loaded_weather = True
+                merged_weather = pd.read_csv("weather.csv", index_col=0, header="infer").reset_index(drop=True)
         else:
             merged_weather = pd.concat([merged_weather, get_weather_api(lat, long)], ignore_index=True)
     
@@ -46,7 +58,6 @@ def findRoute(source_dock, dest_dock, sailing_speed, travel_duration):
     }
 
     route_list = llm_client.generate(j.dumps(obj))
-    print(route_list)
 
     return merged_maritime, merged_weather, get_maritime_figure(merged_maritime), get_weather_figure(merged_weather), route_list
 
@@ -57,41 +68,35 @@ def get_maritime_figure(merged):
     merged["primaryWaveDir"] = merged["primaryWaveDir"].astype("category")
     merged["windWaveDir"] = merged["windWaveDir"].astype("category")
 
-    fig, axis = plt.subplots(figsize=(12, 12))
-    axis.set_xlabel('Time')
-    axis.set_ylabel('Sea Surface Temp (°C)', color='tab:red')
-    axis.plot(merged['dateTimeISO'], merged['seaSurfaceTemperatureC'], color='tab:red', label='Sea Surface Temp (°C)')
-    axis.tick_params(axis='y', labelcolor='tab:red')
+    fig, axis = plt.subplots(3, 2, figsize=(12, 12))
+    axis = axis.flatten()
+
+    axis[0].bar(merged['latitude'], merged["seaSurfaceTemperatureC"], color='tab:red', label='Sea Surface Temp (°C)')
+    axis[0].set_xlabel('Latitude')
+    axis[0].set_ylabel('Sea Surface Temp (°C)', color='tab:red')
 
     # Create a secondary y-axis for sea current speed
-    ax2 = axis.twinx()
-    ax2.set_ylabel('Sea Current Speed (m/s)', color='tab:blue')
-    ax2.plot(merged['dateTimeISO'], merged['seaCurrentSpeedMPS'], color='tab:blue', label='Sea Current Speed (m/s)')
-    ax2.tick_params(axis='y', labelcolor='tab:blue')
+    axis[1].bar(merged['latitude'], merged["seaCurrentSpeedMPS"], color='tab:blue', label='Sea Current Speed (m/s)')
+    axis[1].set_xlabel('Latitude')
+    axis[1].set_ylabel('Sea Current Speed (m/s)', color='tab:blue')
 
     # Create another y-axis for significant wave height
-    ax3 = axis.twinx()
-    ax3.spines['right'].set_position(('outward', 60))  # Move the third y-axis out to avoid overlap
-    ax3.set_ylabel('Significant Wave Height (m)', color='tab:green')
-    ax3.plot(merged['dateTimeISO'], merged['significantWaveHeightM'], color='tab:green', label='Wave Height (m)')
-    ax3.tick_params(axis='y', labelcolor='tab:green')
+    axis[2].bar(merged['latitude'], merged["significantWaveHeightM"], color='tab:green', label='Wave Height (m)')
+    axis[2].set_xlabel('Latitude')
+    axis[2].set_ylabel('Wave Height (m)', color='tab:green')
 
     # Create a fourth y-axis for tides
-    ax4 = axis.twinx()
-    ax4.spines['right'].set_position(('outward', 120))  # Move the fourth y-axis further out
-    ax4.set_ylabel('Tides (m)', color='tab:orange')
-    ax4.plot(merged['dateTimeISO'], merged['tidesM'], color='tab:orange', label='Tides (m)')
-    ax4.tick_params(axis='y', labelcolor='tab:orange')
+    axis[3].bar(merged['latitude'], merged["tidesM"], color='tab:orange', label='Tides (m)')
+    axis[3].set_xlabel('Latitude')
+    axis[3].set_ylabel('Tides (m)', color='tab:orange')
 
     # Create a fifth y-axis for surge
-    ax5 = axis.twinx()
-    ax5.spines['right'].set_position(('outward', 180))  # Move the fifth y-axis further out
-    ax5.set_ylabel('Surge (m)', color='tab:purple')
-    ax5.plot(merged['dateTimeISO'], merged['surgeM'], color='tab:purple', label='Surge (m)')
-    ax5.tick_params(axis='y', labelcolor='tab:purple')
+    axis[4].bar(merged['latitude'], merged["surgeM"], color='tab:purple', label='Surge (m)')
+    axis[4].set_xlabel('Latitude')
+    axis[4].set_ylabel('Surge (m)', color='tab:purple')
 
     # Title and layout adjustments
-    plt.title(f"Environmental Data Plot")
+    plt.title(f"Maritime Data Plot")
     fig.tight_layout()
     
     return fig
@@ -133,11 +138,9 @@ def get_weather_figure(merged):
     axes[5].set_title('Pressure (MB)')
     axes[5].set_xlabel('Longitude')
 
-    # Add a color bar to the last plot to represent the data range
-    fig.colorbar(axes[5].collections[0], ax=axes, location='right', pad=0.01)
-
     # Add a title
-    fig.suptitle('Weather Variables by Latitude and Longitude')
+    fig.suptitle('Weather Data Plot')
+    fig.tight_layout()
     
     return fig
 
