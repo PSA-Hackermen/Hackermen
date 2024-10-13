@@ -48,7 +48,7 @@ def findRoute(source_dock, dest_dock, sailing_speed, travel_duration):
     route_list = llm_client.generate(j.dumps(obj))
     print(route_list)
 
-    return merged_maritime, merged_weather, get_maritime_figure(merged_maritime), get_weather_figure(merged_weather)
+    return merged_maritime, merged_weather, get_maritime_figure(merged_maritime), get_weather_figure(merged_weather), route_list
 
 def get_maritime_figure(merged):
     # prevent timezone localisation

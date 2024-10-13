@@ -23,13 +23,14 @@ class OpenAIClient:
              
              We will give you a json input that contains the following:
 
-             1. Source Port
-             2. Destination Port
+             1. Source Port as a tuple of (latitude, longitude)
+             2. Destination Port as a tuple of (latitude, longitude)
              3. Average sailing speed of the ship 
              4. The maximum travel duration allowed
              3. Nested json structure containing the coordinates of maritime landmarks and their respective weather conditions
 
              Using the above sea coordinates and well known paths from source port to destination port, you will output the route such that it maximises the generation of renewable energy from the ship.
+             You do not need to go through every single maritime coordinate, but you can use the weather conditions to determine the best route to take.
 
              Please embed using the json format {"route" : [a list of intermediary maritime coordinates from src to dest]}"""):
 
