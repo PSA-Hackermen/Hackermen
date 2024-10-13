@@ -68,35 +68,42 @@ def get_maritime_figure(merged):
     merged["primaryWaveDir"] = merged["primaryWaveDir"].astype("category")
     merged["windWaveDir"] = merged["windWaveDir"].astype("category")
 
-    fig, axis = plt.subplots(3, 2, figsize=(12, 12))
+    fig, axis = plt.subplots(3, 2, figsize=(12, 12), subplot_kw=dict(projection='3d'))
     axis = axis.flatten()
-
-    axis[0].bar(merged['latitude'], merged["seaSurfaceTemperatureC"], color='tab:red', label='Sea Surface Temp (°C)')
+    depths = [1 for i in range(len(merged))]
+    height_depths = [i for i in range(len(merged))]
+    
+    axis[0].bar3d(merged['latitude'], merged['longitude'], merged["seaSurfaceTemperatureC"], dx=depths, dy=depths, dz=height_depths, color='tab:red', label='Sea Surface Temp (°C)', shade=True)
     axis[0].set_xlabel('Latitude')
-    axis[0].set_ylabel('Sea Surface Temp (°C)', color='tab:red')
+    axis[0].set_ylabel('Longitude')
+    axis[0].set_zlabel('Sea Surface Temp (°C)', color='tab:red')
 
     # Create a secondary y-axis for sea current speed
-    axis[1].bar(merged['latitude'], merged["seaCurrentSpeedMPS"], color='tab:blue', label='Sea Current Speed (m/s)')
+    axis[1].bar3d(merged['latitude'], merged['longitude'], merged["seaCurrentSpeedMPS"], dx=depths, dy=depths, dz=height_depths, color='tab:blue', label='Sea Current Speed (m/s)', shade=True)
     axis[1].set_xlabel('Latitude')
-    axis[1].set_ylabel('Sea Current Speed (m/s)', color='tab:blue')
+    axis[0].set_ylabel('Longitude')
+    axis[1].set_zlabel('Sea Current Speed (m/s)', color='tab:blue')
 
     # Create another y-axis for significant wave height
-    axis[2].bar(merged['latitude'], merged["significantWaveHeightM"], color='tab:green', label='Wave Height (m)')
+    axis[2].bar3d(merged['latitude'], merged['longitude'], merged["significantWaveHeightM"], dx=depths, dy=depths, dz=height_depths, color='tab:green', label='Wave Height (m)', shade=True)
     axis[2].set_xlabel('Latitude')
-    axis[2].set_ylabel('Wave Height (m)', color='tab:green')
+    axis[0].set_ylabel('Longitude')
+    axis[2].set_zlabel('Wave Height (m)', color='tab:green')
 
     # Create a fourth y-axis for tides
-    axis[3].bar(merged['latitude'], merged["tidesM"], color='tab:orange', label='Tides (m)')
+    axis[3].bar3d(merged['latitude'], merged['longitude'], merged["tidesM"], dx=depths, dy=depths, dz=height_depths, color='tab:orange', label='Tides (m)', shade=True)
     axis[3].set_xlabel('Latitude')
-    axis[3].set_ylabel('Tides (m)', color='tab:orange')
+    axis[0].set_ylabel('Longitude')
+    axis[3].set_zlabel('Tides (m)', color='tab:orange')
 
     # Create a fifth y-axis for surge
-    axis[4].bar(merged['latitude'], merged["surgeM"], color='tab:purple', label='Surge (m)')
+    axis[4].bar3d(merged['latitude'], merged['longitude'], merged["surgeM"], dx=depths, dy=depths, dz=height_depths, color='tab:purple', label='Surge (m)', shade=True)
     axis[4].set_xlabel('Latitude')
-    axis[4].set_ylabel('Surge (m)', color='tab:purple')
+    axis[0].set_ylabel('Longitude')
+    axis[4].set_zlabel('Surge (m)', color='tab:purple')
 
     # Title and layout adjustments
-    plt.title(f"Maritime Data Plot")
+    fig.suptitle(f"Maritime Data Plot")
     fig.tight_layout()
     
     return fig
