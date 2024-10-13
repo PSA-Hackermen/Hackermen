@@ -1,10 +1,11 @@
 import streamlit as st
+import json as j
 
 from streamlit_folium import folium_static, st_folium
 from utils.map import Node, Edge, Map, get_port_poi_plot
 from utils.state import define_session_states
 from api.weather import findRoute
-from constants import PORTS, MARITIME_POINTS, SAILING_SPEEDS, TRAVEL_DURATIONS
+from constants import PORTS, MARITIME_POINTS
 
 # declare session states
 define_session_states()
@@ -43,23 +44,47 @@ st.markdown("Once you are ready, hit the **\"Find optimal route\"** button below
 
 if st.button("Find Optimal Route", key="find_route") or st.session_state["find_route"]:
     with st.spinner("Generating..."):
-        st.session_state["maritime-df"], st.session_state["weather-df"], st.session_state["maritime-figure"], st.session_state["weather-figure"] = \
+        source_dock = PORTS.get(source_dock)
+        dest_dock = PORTS.get(dest_dock)    
+        st.session_state["maritime-df"], st.session_state["weather-df"], st.session_state["maritime-figure"], st.session_state["weather-figure"], st.session_state["route_list"] = \
             findRoute(source_dock, dest_dock, sailing_speed, travel_duration)
+            
+        # Parse the JSON string
+        parsed_data = j.loads(st.session_state["route_list"])
+        # Extract the route information
+        route = parsed_data['route']
+        # Save latitude and longitude as an array of tuples
+        coordinates = [(index+1, point[0], point[1]) for index, point in enumerate(route)]
+        # add source and destination to the coordinates
+        coordinates.insert(len(coordinates),("DEST", dest_dock[0], dest_dock[1]))
+        coordinates.insert(0, ("SOURCE", source_dock[0], dest_dock[1]))
 
-        st.subheader("Routes")
-        node1 = Node(name="A", latitude=1.290270, longitude=103.851959)  # Singapore
-        node2 = Node(name="B", latitude=1.352083, longitude=103.819836)  # Another point in Singapore
-        node3 = Node(name="C", latitude=1.364917, longitude=103.822872)  # Another point in Singapore
+        # Output the array of tuples
+        print(coordinates)
 
-        # Creating edges between nodes
-        edge1 = Edge(source=node1, destination=node2, weight=2.0)  # Edge with weight 2.0
-        edge2 = Edge(source=node2, destination=node3, weight=5.0)  # Edge with weight 5.0
-        edge3 = Edge(source=node1, destination=node3, weight=-8.0)  # Edge with weight 8.0
+        nodes = []
+        edges = []
 
-        # List of edges
-        edges = [edge1, edge2, edge3]
+        for index, latitude, longitude in coordinates:
+            nodes.append(Node(name=f"Node {index}", latitude=latitude, longitude=longitude))
+
+        for i in range(len(nodes) - 1):
+            print(f"Appending edge from {nodes[i].name} to {nodes[i + 1].name}")
+            edges.append(Edge(source=nodes[i], destination=nodes[i + 1], weight=2.0))
 
         # Get the edge data in list format (source, destination, weight)
         edge_data = [edge.get() for edge in edges]
 
+        st.subheader("Routes")
         st_folium(Map(1.29, 103.8, edges).plot(), width=700, height=500, returned_objects=[])
+
+        # Create a list of formatted nodes
+        st.write("Path:")
+
+        for i in range(len(coordinates) - 1):
+            node_from = coordinates[i]
+            node_to = coordinates[i + 1]
+            st.write(f"Node {node_from[0]} ({node_from[1]}, {node_from[2]}) ➡️ Node {node_to[0]} ({node_to[1]}, {node_to[2]})")
+            
+        # Final node
+        st.write(f"Final Node: Node {coordinates[-1][0]} ({coordinates[-1][1]}, {coordinates[-1][2]})")
